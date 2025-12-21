@@ -3,204 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hianime Video API - MegaPlay</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <title>My Private Anime Player</title>
     
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <style>
-        :root {
-            --bg-primary: #0a0a0a;
-            --bg-secondary: #121212;
-            --bg-tertiary: #1a1a1a;
-            --text-primary: #ffffff;
-            --text-secondary: #a0a0a0;
-            --accent-primary: #6c5ce7;
-            --accent-secondary: #a29bfe;
-            --accent-success: #00b894;
-            --accent-danger: #ff7675;
-            --border-color: #2d2d2d;
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            --border-radius: 12px;
-            --border-radius-lg: 20px;
-            --neon-glow: 0 0 15px rgba(108, 92, 231, 0.3);
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            margin: 0; padding: 0;
-        }
-
-        .api-container {
-            max-width: 900px;
-            margin: 50px auto;
-            padding: 40px;
-            background: var(--bg-secondary);
-            border-radius: var(--border-radius-lg);
-            border: 1px solid var(--border-color);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .api-header h1 {
-            text-align: center;
-            font-weight: 700;
-            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 30px;
-        }
-
-        .api-section {
-            margin-bottom: 30px;
-            padding: 25px;
-            background: var(--bg-tertiary);
-            border-radius: var(--border-radius);
-            border: 1px solid var(--border-color);
-            transition: var(--transition);
-        }
-
-        .api-section:hover { box-shadow: var(--neon-glow); }
-
-        .code-block {
-            background-color: #1e1e2e;
-            color: #f8f8f2;
-            padding: 15px;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            word-break: break-all;
-            border-left: 4px solid var(--accent-primary);
-            margin-top: 10px;
-        }
-
-        .test-form {
-            background: rgba(108, 92, 231, 0.05);
-            padding: 20px;
-            border-radius: var(--border-radius);
-            border: 1px solid var(--accent-primary);
-        }
-
-        .form-control, .form-select {
-            background-color: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            color: white;
-        }
-
-        .form-control:focus, .form-select:focus {
-            background-color: var(--bg-primary);
-            color: white;
-            border-color: var(--accent-primary);
-            box-shadow: none;
-        }
-
-        .embed-container {
-            position: relative;
-            padding-bottom: 56.25%; /* 16:9 Ratio */
-            height: 0; overflow: hidden;
-            border-radius: 8px;
-            background: #000;
-            margin-top: 15px;
-        }
-
-        .embed-container iframe {
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%; border: 0;
-        }
-
-        .btn-primary { background: var(--accent-primary); border: none; }
-        .btn-primary:hover { background: var(--accent-secondary); }
-
-        .alert-info { background: rgba(108, 92, 231, 0.1); color: white; border: none; border-left: 4px solid var(--accent-primary); }
+        :root { --bg: #0a0a0c; --accent: #6c5ce7; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; }
+        .player-container { width: 100%; max-width: 1000px; margin: 20px auto; }
+        #artplayer { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; }
+        .controls-card { background: #16161a; padding: 20px; border-radius: 12px; border: 1px solid #2d2d2d; margin-top: 20px; }
+        .status-badge { font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; background: rgba(108, 92, 231, 0.2); color: var(--accent); }
     </style>
 </head>
-
 <body>
 
-<div class="api-container">
-    <div class="api-header">
-        <h1>Hianime Video API</h1>
-    </div>
+<div class="container player-container">
+    <h2 class="text-center my-4">My Private Player</h2>
 
-    <div class="alert alert-info">
-        <i class="fas fa-info-circle"></i> Embed videos easily by providing the Hianime Episode ID.
-    </div>
+    <div id="artplayer"></div>
 
-    <div class="api-section">
-        <h3><i class="fas fa-search"></i> How to find Episode ID?</h3>
-        <p>Go to Hianime, open an episode, and copy the number after <code>?ep=</code></p>
-        <code class="d-block p-2 bg-dark text-info">Example: .../watch/anime-name?ep=<b class="text-white">136197</b></code>
-    </div>
-
-    <div class="api-section" id="test-embed">
-        <h2><i class="fas fa-vial"></i> Test Your Embed</h2>
-        <div class="test-form">
-            <form id="embed-form">
-                <div class="mb-3">
-                    <label class="form-label">Hianime Episode ID:</label>
-                    <input type="text" class="form-control" id="episode-id" placeholder="e.g. 136197" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Language:</label>
-                    <select class="form-select" id="language">
-                        <option value="sub">Subtitled (Sub)</option>
-                        <option value="dub">Dubbed (Dub)</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary w-100">
-                    <i class="fas fa-magic"></i> Generate & Preview
-                </button>
-            </form>
-        </div>
-
-        <div id="embed-result" class="mt-4" style="display: none;">
-            <label class="form-label">Your Embed Code:</label>
-            <div class="code-block" id="embed-code"></div>
-            
-            <button class="btn btn-sm btn-secondary mt-2" id="copy-btn">
-                <i class="fas fa-copy"></i> Copy Code
-            </button>
-
-            <h4 class="mt-4">Live Preview:</h4>
-            <div class="embed-container">
-                <iframe id="preview-frame" src="" allowfullscreen></iframe>
+    <div class="controls-card">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Anime ID</label>
+                <input type="text" id="anime-id" class="form-control bg-dark text-white border-secondary" placeholder="one-piece-100">
             </div>
+            <div class="col-md-3">
+                <label class="form-label">Episode</label>
+                <input type="number" id="ep-no" class="form-control bg-dark text-white border-secondary" value="1">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button onclick="loadStream()" class="btn btn-primary w-100" style="background: var(--accent); border:none;">
+                    Play Now
+                </button>
+            </div>
+        </div>
+        <div class="mt-3">
+            <span class="status-badge" id="status">Ready to stream</span>
         </div>
     </div>
 </div>
 
 <script>
-    const form = document.getElementById('embed-form');
-    const resultDiv = document.getElementById('embed-result');
-    const codeDisplay = document.getElementById('embed-code');
-    const previewFrame = document.getElementById('preview-frame');
-    const copyBtn = document.getElementById('copy-btn');
-
-    form.addEventListener('submit', function (e) {
-        e.preventDefault();
-
-        const epId = document.getElementById('episode-id').value.trim();
-        const lang = document.getElementById('language').value;
-        const finalUrl = `https://megaplay.buzz/stream/s-2/${epId}/${lang}`;
-        
-        // Construct the iframe string
-        const iframeCode = `<iframe src="${finalUrl}" width="100%" height="100%" frameborder="0" scrolling="no" allowfullscreen></iframe>`;
-
-        // Update UI
-        codeDisplay.textContent = iframeCode;
-        previewFrame.src = finalUrl;
-        resultDiv.style.display = 'block';
-
-        // Smooth scroll to preview
-        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    let art = new ArtPlayer({
+        container: '#artplayer',
+        url: '', // Initially empty
+        fullscreen: true,
+        autoplay: false,
+        theme: '#6c5ce7',
+        icons: {
+            loading: '<img src="https://artplayer.org/assets/img/ploading.gif">',
+        },
     });
 
-    copyBtn.addEventListener('click', function () {
-        navigator.clipboard.writeText(codeDisplay.textContent);
-        const originalText = copyBtn.innerHTML;
-        copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-        setTimeout(() => { copyBtn.innerHTML = originalText; }, 2000);
-    });
+    async function loadStream() {
+        const animeId = document.getElementById('anime-id').value.trim();
+        const epNo = document.getElementById('ep-no').value;
+        const status = document.getElementById('status');
+
+        if (!animeId) return alert("Please enter an Anime ID");
+
+        try {
+            status.innerText = "Fetching server information...";
+            
+            // 1. Get episode list to find the specific episode internal ID
+            // Using your API structure: /api/episodes/{id}
+            const epResp = await fetch(`https://1010-delta.vercel.app/api/episodes/${animeId}`);
+            const epData = await epResp.json();
+            
+            if (!epData.success) throw new Error("Anime not found");
+
+            const episode = epData.results.episodes.find(e => e.episode_no == epNo);
+            if (!episode) throw new Error("Episode not found");
+
+            // 2. Get the stream link
+            // Using your API structure: /api/stream?id={animeId}?ep={epId}&server=hd-1&type=sub
+            status.innerText = "Extracting streaming link...";
+            const streamUrl = `https://1010-delta.vercel.app/api/stream?id=${animeId}?ep=${episode.data_id}&server=hd-1&type=sub`;
+            
+            const streamResp = await fetch(streamUrl);
+            const streamData = await streamResp.json();
+
+            const m3u8 = streamData.results.streamingLink[0].link.file;
+
+            // 3. Load into ArtPlayer with Hls.js
+            status.innerText = "Playing: " + episode.title;
+            
+            art.switchUrl(m3u8);
+            
+            // Re-attach HLS logic for the new URL
+            if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(m3u8);
+                hls.attachMedia(art.video);
+            }
+
+        } catch (error) {
+            console.error(error);
+            status.innerText = "Error: " + error.message;
+        }
+    }
 </script>
 
 </body>
