@@ -3,89 +3,205 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anime Player Pro</title>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js"></script>
+    <title>Hianime Video API - MegaPlay</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    
     <style>
-        body, html { margin: 0; padding: 0; background: #000; height: 100vh; overflow: hidden; }
-        #artplayer { width: 100vw; height: 100vh; }
-        .skip-btn {
-            position: absolute; bottom: 80px; right: 20px; z-index: 100;
-            background: #ffad00; color: #000; padding: 12px 24px;
-            font-family: sans-serif; font-weight: bold; cursor: pointer;
-            display: none; border-radius: 4px; border: 1px solid white;
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #121212;
+            --bg-tertiary: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --accent-primary: #6c5ce7;
+            --accent-secondary: #a29bfe;
+            --accent-success: #00b894;
+            --accent-danger: #ff7675;
+            --border-color: #2d2d2d;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --border-radius: 12px;
+            --border-radius-lg: 20px;
+            --neon-glow: 0 0 15px rgba(108, 92, 231, 0.3);
         }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            margin: 0; padding: 0;
+        }
+
+        .api-container {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 40px;
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius-lg);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .api-header h1 {
+            text-align: center;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+        }
+
+        .api-section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: var(--bg-tertiary);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+
+        .api-section:hover { box-shadow: var(--neon-glow); }
+
+        .code-block {
+            background-color: #1e1e2e;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+            border-left: 4px solid var(--accent-primary);
+            margin-top: 10px;
+        }
+
+        .test-form {
+            background: rgba(108, 92, 231, 0.05);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--accent-primary);
+        }
+
+        .form-control, .form-select {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: white;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: var(--bg-primary);
+            color: white;
+            border-color: var(--accent-primary);
+            box-shadow: none;
+        }
+
+        .embed-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Ratio */
+            height: 0; overflow: hidden;
+            border-radius: 8px;
+            background: #000;
+            margin-top: 15px;
+        }
+
+        .embed-container iframe {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%; border: 0;
+        }
+
+        .btn-primary { background: var(--accent-primary); border: none; }
+        .btn-primary:hover { background: var(--accent-secondary); }
+
+        .alert-info { background: rgba(108, 92, 231, 0.1); color: white; border: none; border-left: 4px solid var(--accent-primary); }
     </style>
 </head>
+
 <body>
 
-    <div id="artplayer"></div>
-    <div id="skip-intro" class="skip-btn">SKIP INTRO</div>
+<div class="api-container">
+    <div class="api-header">
+        <h1>Hianime Video API</h1>
+    </div>
 
-    <script>
-        // 1. API & Proxy Setup
-        const PROXY = "https://proxy-pi-tawny.vercel.app/?url=";
-        const M3U8_URL = "https://haildrop77.pro/_v7/b145d2374990ae1c6729b473457964247200b0c4dfc266cd896c13c16c62b0176c9ddc773b9ab8e9957c6579e5ef9fbc10c92eb2275126f9dfabd86d42fdf73dd879b9a87ced51fc2c6b8bb389fb2d1c2b0405a67f28128f230594972df9cb66945a5f8f51629dbade11b96c674a291037a95b568ad1a2c6d896d45252b299be/master.m3u8";
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> Embed videos easily by providing the Hianime Episode ID.
+    </div>
 
-        // 2. Player Initialization
-        const art = new Artplayer({
-            container: '#artplayer',
-            url: PROXY + encodeURIComponent(M3U8_URL),
-            type: 'm3u8',
-            autoplay: true,
-            pip: false, // Turned off by default to fix your error
-            fullscreen: true,
-            setting: true,
-            theme: '#ffad00',
-            customType: {
-                m3u8: function (video, url) {
-                    if (Hls.isSupported()) {
-                        const hls = new Hls({
-                            // These settings help bypass minor network issues
-                            xhrSetup: (xhr) => { xhr.withCredentials = false; },
-                            manifestLoadingMaxRetry: 4
-                        });
-                        hls.loadSource(url);
-                        hls.attachMedia(video);
+    <div class="api-section">
+        <h3><i class="fas fa-search"></i> How to find Episode ID?</h3>
+        <p>Go to Hianime, open an episode, and copy the number after <code>?ep=</code></p>
+        <code class="d-block p-2 bg-dark text-info">Example: .../watch/anime-name?ep=<b class="text-white">136197</b></code>
+    </div>
 
-                        // FIX: Only play when the video metadata is actually there
-                        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                            video.play().catch(() => {
-                                art.notice.show = 'Click screen to start video';
-                            });
-                        });
+    <div class="api-section" id="test-embed">
+        <h2><i class="fas fa-vial"></i> Test Your Embed</h2>
+        <div class="test-form">
+            <form id="embed-form">
+                <div class="mb-3">
+                    <label class="form-label">Hianime Episode ID:</label>
+                    <input type="text" class="form-control" id="episode-id" placeholder="e.g. 136197" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Language:</label>
+                    <select class="form-select" id="language">
+                        <option value="sub">Subtitled (Sub)</option>
+                        <option value="dub">Dubbed (Dub)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-magic"></i> Generate & Preview
+                </button>
+            </form>
+        </div>
 
-                        // Error Recovery (Essential for HLS)
-                        hls.on(Hls.Events.ERROR, (event, data) => {
-                            if (data.fatal) {
-                                hls.recoverMediaError();
-                            }
-                        });
-                    }
-                },
-            },
-        });
+        <div id="embed-result" class="mt-4" style="display: none;">
+            <label class="form-label">Your Embed Code:</label>
+            <div class="code-block" id="embed-code"></div>
+            
+            <button class="btn btn-sm btn-secondary mt-2" id="copy-btn">
+                <i class="fas fa-copy"></i> Copy Code
+            </button>
 
-        // 3. Metadata Ready Event (Fixes your InvalidStateError)
-        art.on('video:loadedmetadata', () => {
-            console.log("Metadata loaded! PiP is now safe to use.");
-            art.setting.update({ pip: true });
-        });
+            <h4 class="mt-4">Live Preview:</h4>
+            <div class="embed-container">
+                <iframe id="preview-frame" src="" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+</div>
 
-        // 4. Skip Intro Logic (Hardcoded 0-89s for this example)
-        const skipBtn = document.getElementById('skip-intro');
-        art.on('video:timeupdate', () => {
-            if (art.currentTime >= 0 && art.currentTime <= 89) {
-                skipBtn.style.display = 'block';
-            } else {
-                skipBtn.style.display = 'none';
-            }
-        });
+<script>
+    const form = document.getElementById('embed-form');
+    const resultDiv = document.getElementById('embed-result');
+    const codeDisplay = document.getElementById('embed-code');
+    const previewFrame = document.getElementById('preview-frame');
+    const copyBtn = document.getElementById('copy-btn');
 
-        skipBtn.onclick = () => {
-            art.currentTime = 89;
-            art.notice.show = 'Skipped Intro';
-        };
-    </script>
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const epId = document.getElementById('episode-id').value.trim();
+        const lang = document.getElementById('language').value;
+        const finalUrl = `https://megaplay.buzz/stream/s-2/${epId}/${lang}`;
+        
+        // Construct the iframe string
+        const iframeCode = `<iframe src="${finalUrl}" width="100%" height="100%" frameborder="0" scrolling="no" allowfullscreen></iframe>`;
+
+        // Update UI
+        codeDisplay.textContent = iframeCode;
+        previewFrame.src = finalUrl;
+        resultDiv.style.display = 'block';
+
+        // Smooth scroll to preview
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    copyBtn.addEventListener('click', function () {
+        navigator.clipboard.writeText(codeDisplay.textContent);
+        const originalText = copyBtn.innerHTML;
+        copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        setTimeout(() => { copyBtn.innerHTML = originalText; }, 2000);
+    });
+</script>
+
 </body>
 </html>
