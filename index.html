@@ -3,109 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Custom Anime Player</title>
+    <title>Ultimate Anime Player</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/artplayer-plugin-hls-quality/dist/artplayer-plugin-hls-quality.js"></script>
     <style>
-        body { margin: 0; padding: 0; background: #000; overflow: hidden; }
-        #player { width: 100vw; height: 100vh; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; }
+        #artplayer { width: 100vw; height: 100vh; }
         
-        /* Custom styling for the Skip Button */
-        #skip-btn {
-            display: none;
+        /* Custom Skip Intro Button Styling */
+        .skip-intro {
             position: absolute;
-            bottom: 80px;
+            bottom: 70px;
             right: 20px;
-            z-index: 20;
-            background: rgba(255, 173, 0, 0.9);
-            color: black;
-            font-weight: bold;
-            padding: 10px 20px;
-            border-radius: 4px;
+            padding: 10px 25px;
+            background: rgba(255, 173, 0, 0.95);
+            color: #000;
+            font-family: sans-serif;
+            font-weight: 900;
+            border-radius: 5px;
             cursor: pointer;
-            transition: all 0.2s;
+            z-index: 999;
+            display: none;
+            transition: transform 0.2s;
+            border: 2px solid white;
         }
-        #skip-btn:hover { transform: scale(1.1); background: #fff; }
+        .skip-intro:hover { transform: scale(1.1); background: #fff; }
     </style>
 </head>
 <body>
 
-    <div id="player"></div>
-    <div id="skip-btn">SKIP INTRO</div>
+    <div id="artplayer"></div>
+    <div id="skip-btn" class="skip-intro">SKIP INTRO</div>
 
     <script>
-        // YOUR API DATA (This would normally come from your fetch call)
-        const apiResponse = {
-            "streamingLink": {
-                "link": { "file": "https://haildrop77.pro/_v7/.../master.m3u8" },
-                "tracks": [
-                    { "file": "https://mgstatics.xyz/subtitle/.../eng-2.vtt", "label": "English", "default": true }
-                ],
-                "intro": { "start": 0, "end": 89 },
-                "outro": { "start": 1460, "end": 1549 }
-            }
+        // 1. Setup Proxy & Data
+        const PROXY = "https://proxy-pi-tawny.vercel.app/?url=";
+        const videoData = {
+            m3u8: "https://haildrop77.pro/_v7/.../master.m3u8",
+            intro: { start: 0, end: 89 },
+            tracks: [{ file: "https://mgstatics.xyz/subtitle/.../eng.vtt", label: "English", default: true }]
         };
 
-        const stream = apiResponse.streamingLink;
-        const skipBtn = document.getElementById('skip-btn');
-
-        // 1. Initialize ArtPlayer
+        // 2. Initialize Player
         const art = new Artplayer({
-            container: '#player',
-            url: stream.link.file,
+            container: '#artplayer',
+            url: PROXY + encodeURIComponent(videoData.m3u8),
             type: 'm3u8',
+            theme: '#ffad00',
             fullscreen: true,
             setting: true,
-            pip: true,
             playbackRate: true,
             aspectRatio: true,
-            theme: '#ffad00', // Megaplay-style yellow/orange
-            
-            // 2. Custom Icons (Replace URLs with your SVG/PNG paths)
+            hotkey: true,
+            pip: true,
+            // 3. Custom Icons - Replace these strings with your SVG code
             icons: {
                 loading: '<img width="60" src="https://artplayer.org/assets/img/ploading.gif">',
-                state: '<img width="150" src="https://artplayer.org/assets/img/state.svg">',
+                state: '<svg width="100" height="100">...</svg>', 
             },
-
-            // 3. HLS Support
+            subtitle: {
+                url: PROXY + encodeURIComponent(videoData.tracks[0].file),
+                type: 'vtt',
+                style: { color: '#fff', fontSize: '25px' }
+            },
+            plugins: [
+                artplayerPluginHlsQuality({
+                    control: true, // Quality Selection like Megaplay
+                    getResolution: (level) => level.height + 'p',
+                }),
+            ],
             customType: {
                 m3u8: function (video, url) {
                     if (Hls.isSupported()) {
                         const hls = new Hls();
                         hls.loadSource(url);
                         hls.attachMedia(video);
-                    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                        video.src = url;
+                        art.hls = hls; // Connect HLS to Artplayer instance
                     }
                 },
             },
-
-            // 4. Subtitles
-            subtitle: {
-                url: stream.tracks.find(t => t.default)?.file || '',
-                type: 'vtt',
-                style: {
-                    color: '#fff',
-                    fontSize: '24px',
-                    textShadow: '0 0 4px rgba(0,0,0,1)'
-                },
-            },
-
-            // 5. Timeline Markers (Visual dots for Intro/Outro)
-            highlight: [
-                { time: stream.intro.start, text: 'Intro' },
-                { time: stream.outro.start, text: 'Outro' },
-            ],
         });
 
-        // 6. Skip Intro Logic
+        // 4. Megaplay Skip Intro Logic
+        const skipBtn = document.getElementById('skip-btn');
         art.on('video:timeupdate', () => {
-            const currentTime = art.currentTime;
-            
-            // Show skip button if within intro range
-            if (currentTime >= stream.intro.start && currentTime <= stream.intro.end) {
+            if (art.currentTime >= videoData.intro.start && art.currentTime <= videoData.intro.end) {
                 skipBtn.style.display = 'block';
             } else {
                 skipBtn.style.display = 'none';
@@ -113,19 +96,14 @@
         });
 
         skipBtn.onclick = () => {
-            art.currentTime = stream.intro.end;
-            skipBtn.style.display = 'none';
-            art.notice.show = 'Skipped Intro';
+            art.currentTime = videoData.intro.end;
+            art.notice.show = 'Intro Skipped';
         };
 
-        // 7. Auto-Skip Outro (Optional)
-        art.on('video:timeupdate', () => {
-            if (art.currentTime >= stream.outro.start) {
-                art.notice.show = 'Outro Started - Up Next in 5s...';
-                // You can add auto-next logic here
-            }
+        // 5. Auto-Next Placeholder (For your next-episode logic)
+        art.on('video:ended', () => {
+            alert("Episode Finished! Redirecting to next...");
         });
-
     </script>
 </body>
 </html>
