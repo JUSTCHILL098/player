@@ -3,110 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Private Anime Player</title>
-    
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js"></script>
+    <title>Hianime Private API - ArtPlayer</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        :root { --bg: #0a0a0c; --accent: #6c5ce7; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; }
-        .player-container { width: 100%; max-width: 1000px; margin: 20px auto; }
-        #artplayer { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; }
-        .controls-card { background: #16161a; padding: 20px; border-radius: 12px; border: 1px solid #2d2d2d; margin-top: 20px; }
-        .status-badge { font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; background: rgba(108, 92, 231, 0.2); color: var(--accent); }
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #121212;
+            --text-primary: #ffffff;
+            --accent-primary: #6c5ce7;
+            --border-color: #2d2d2d;
+            --border-radius-lg: 20px;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .api-container {
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 40px;
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius-lg);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .api-header h1 {
+            text-align: center;
+            background: linear-gradient(45deg, var(--accent-primary), #a29bfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+            margin-bottom: 30px;
+        }
+
+        .test-form {
+            background: rgba(108, 92, 231, 0.05);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid rgba(108, 92, 231, 0.2);
+        }
+
+        .form-control, .form-select {
+            background-color: #1a1a1a;
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 12px;
+        }
+
+        .form-control:focus {
+            background-color: #1a1a1a;
+            color: white;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+        }
+
+        /* ArtPlayer Container */
+        #artplayer {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 12px;
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-primary { background: var(--accent-primary); border: none; font-weight: 600; padding: 12px 25px; }
+        .btn-primary:hover { background: #5649c1; transform: translateY(-2px); }
+        
+        .code-block {
+            background-color: #1e1e2e;
+            color: #f8f8f2;
+            padding: 18px;
+            border-radius: 12px;
+            font-family: monospace;
+            margin-top: 15px;
+            border-left: 3px solid var(--accent-primary);
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
     </style>
 </head>
 <body>
 
-<div class="container player-container">
-    <h2 class="text-center my-4">My Private Player</h2>
+<div class="api-container">
+    <div class="api-header">
+        <h1>Private Hianime Player</h1>
+    </div>
 
-    <div id="artplayer"></div>
-
-    <div class="controls-card">
-        <div class="row g-3">
-            <div class="col-md-6">
+    <div class="test-form">
+        <div class="row">
+            <div class="col-md-6 mb-3">
                 <label class="form-label">Anime ID</label>
-                <input type="text" id="anime-id" class="form-control bg-dark text-white border-secondary" placeholder="one-piece-100">
+                <input type="text" id="anime-id" class="form-control" placeholder="e.g. one-piece-100" value="one-piece-100">
             </div>
-            <div class="col-md-3">
-                <label class="form-label">Episode</label>
-                <input type="number" id="ep-no" class="form-control bg-dark text-white border-secondary" value="1">
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Episode No.</label>
+                <input type="number" id="ep-number" class="form-control" value="1">
             </div>
-            <div class="col-md-3 d-flex align-items-end">
-                <button onclick="loadStream()" class="btn btn-primary w-100" style="background: var(--accent); border:none;">
-                    Play Now
-                </button>
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Language</label>
+                <select id="type" class="form-select">
+                    <option value="sub">Sub</option>
+                    <option value="dub">Dub</option>
+                </select>
             </div>
         </div>
-        <div class="mt-3">
-            <span class="status-badge" id="status">Ready to stream</span>
-        </div>
+        <button id="generate-btn" class="btn btn-primary w-100">
+            <i class="fas fa-play"></i> Generate & Stream
+        </button>
+    </div>
+
+    <div id="result-section" style="display: none;">
+        <div id="artplayer"></div>
+        
+        <h5 class="mt-4"><i class="fas fa-code"></i> Embed Code:</h5>
+        <div class="code-block" id="embed-code"></div>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js"></script>
+
 <script>
-    let art = new ArtPlayer({
-        container: '#artplayer',
-        url: '', // Initially empty
-        fullscreen: true,
-        autoplay: false,
-        theme: '#6c5ce7',
-        icons: {
-            loading: '<img src="https://artplayer.org/assets/img/ploading.gif">',
-        },
-    });
+    let art;
 
-    async function loadStream() {
+    document.getElementById('generate-btn').addEventListener('click', async function() {
         const animeId = document.getElementById('anime-id').value.trim();
-        const epNo = document.getElementById('ep-no').value;
-        const status = document.getElementById('status');
-
-        if (!animeId) return alert("Please enter an Anime ID");
+        const epNum = document.getElementById('ep-number').value;
+        const type = document.getElementById('type').value;
+        const proxy = "https://proxy-pi-tawny.vercel.app/?url=";
+        const baseUrl = "https://1010-delta.vercel.app/api";
 
         try {
-            status.innerText = "Fetching server information...";
-            
-            // 1. Get episode list to find the specific episode internal ID
-            // Using your API structure: /api/episodes/{id}
-            const epResp = await fetch(`https://1010-delta.vercel.app/api/episodes/${animeId}`);
-            const epData = await epResp.json();
-            
-            if (!epData.success) throw new Error("Anime not found");
+            // 1. Fetch Episode List
+            const epListResp = await fetch(`${baseUrl}/episodes/${animeId}`);
+            const epListData = await epListResp.json();
 
-            const episode = epData.results.episodes.find(e => e.episode_no == epNo);
-            if (!episode) throw new Error("Episode not found");
+            if (!epListData.success) throw new Error("Anime not found.");
 
-            // 2. Get the stream link
-            // Using your API structure: /api/stream?id={animeId}?ep={epId}&server=hd-1&type=sub
-            status.innerText = "Extracting streaming link...";
-            const streamUrl = `https://1010-delta.vercel.app/api/stream?id=${animeId}?ep=${episode.data_id}&server=hd-1&type=sub`;
+            // 2. Find the correct episode entry
+            const episodeEntry = epListData.results.episodes.find(e => e.episode_no == epNum);
             
+            if (!episodeEntry) {
+                alert(`Episode ${epNum} not found for this anime.`);
+                return;
+            }
+
+            // 3. Fetch Stream Link
+            // Note: The API requires the episode data_id, not just the number
+            const streamUrl = `${baseUrl}/stream?id=${animeId}?ep=${episodeEntry.data_id}&server=hd-1&type=${type}`;
             const streamResp = await fetch(streamUrl);
             const streamData = await streamResp.json();
 
-            const m3u8 = streamData.results.streamingLink[0].link.file;
-
-            // 3. Load into ArtPlayer with Hls.js
-            status.innerText = "Playing: " + episode.title;
-            
-            art.switchUrl(m3u8);
-            
-            // Re-attach HLS logic for the new URL
-            if (Hls.isSupported()) {
-                const hls = new Hls();
-                hls.loadSource(m3u8);
-                hls.attachMedia(art.video);
+            if (!streamData.success || !streamData.results.streamingLink.length) {
+                throw new Error("Streaming link not available.");
             }
 
-        } catch (error) {
-            console.error(error);
-            status.innerText = "Error: " + error.message;
-        }
-    }
-</script>
+            const rawM3u8 = streamData.results.streamingLink[0].link.file;
+            const proxiedM3u8 = proxy + encodeURIComponent(rawM3u8);
 
+            // 4. Update UI & Player
+            document.getElementById('result-section').style.display = 'block';
+            document.getElementById('embed-code').innerText = `<iframe src="${window.location.href}" width="100%" height="100%" allowfullscreen></iframe>`;
+
+            if (art) art.destroy();
+
+            art = new ArtPlayer({
+                container: '#artplayer',
+                url: proxiedM3u8,
+                type: 'm3u8',
+                fullscreen: true,
+                autoplay: true,
+                customType: {
+                    m3u8: function(video, url) {
+                        if (Hls.isSupported()) {
+                            const hls = new Hls();
+                            hls.loadSource(url);
+                            hls.attachMedia(video);
+                        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                            video.src = url;
+                        }
+                    },
+                },
+            });
+
+        } catch (err) {
+            console.error(err);
+            alert("Error: " + err.message);
+        }
+    });
+</script>
 </body>
 </html>
