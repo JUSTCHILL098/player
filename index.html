@@ -3,107 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Anime Player</title>
+    <title>Professional Anime Player</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/artplayer-plugin-hls-quality/dist/artplayer-plugin-hls-quality.js"></script>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; }
+        body, html { margin: 0; padding: 0; background: #000; height: 100%; overflow: hidden; }
         #artplayer { width: 100vw; height: 100vh; }
-        
-        /* Custom Skip Intro Button Styling */
-        .skip-intro {
-            position: absolute;
-            bottom: 70px;
-            right: 20px;
-            padding: 10px 25px;
-            background: rgba(255, 173, 0, 0.95);
-            color: #000;
-            font-family: sans-serif;
-            font-weight: 900;
-            border-radius: 5px;
-            cursor: pointer;
-            z-index: 999;
-            display: none;
-            transition: transform 0.2s;
-            border: 2px solid white;
+        .skip-btn {
+            position: absolute; bottom: 80px; right: 20px; z-index: 100;
+            background: orange; color: black; padding: 10px 20px;
+            font-weight: bold; cursor: pointer; display: none; border-radius: 5px;
         }
-        .skip-intro:hover { transform: scale(1.1); background: #fff; }
     </style>
 </head>
 <body>
 
     <div id="artplayer"></div>
-    <div id="skip-btn" class="skip-intro">SKIP INTRO</div>
+    <div id="skip-intro" class="skip-btn">SKIP INTRO</div>
 
     <script>
-        // 1. Setup Proxy & Data
+        // --- 1. CONFIGURATION & PROXY ---
         const PROXY = "https://proxy-pi-tawny.vercel.app/?url=";
-        const videoData = {
-            m3u8: "https://haildrop77.pro/_v7/.../master.m3u8",
-            intro: { start: 0, end: 89 },
-            tracks: [{ file: "https://mgstatics.xyz/subtitle/.../eng.vtt", label: "English", default: true }]
-        };
+        
+        // This function simulates your API call to get the stream
+        async function getEpisodeData(episodeId) {
+            // Replace this with your actual fetch(`${your_api}/${episodeId}`)
+            return {
+                url: "https://haildrop77.pro/_v7/b145d2374990ae1c6729b473457964247200b0c4dfc266cd896c13c16c62b0176c9ddc773b9ab8e9957c6579e5ef9fbc10c92eb2275126f9dfabd86d42fdf73dd879b9a87ced51fc2c6b8bb389fb2d1c2b0405a67f28128f230594972df9cb66945a5f8f51629dbade11b96c674a291037a95b568ad1a2c6d896d45252b299be/master.m3u8",
+                introStart: 0,
+                introEnd: 89,
+                nextEpisodeId: "1054528" // Example ID for auto-select
+            };
+        }
 
-        // 2. Initialize Player
-        const art = new Artplayer({
-            container: '#artplayer',
-            url: PROXY + encodeURIComponent(videoData.m3u8),
-            type: 'm3u8',
-            theme: '#ffad00',
-            fullscreen: true,
-            setting: true,
-            playbackRate: true,
-            aspectRatio: true,
-            hotkey: true,
-            pip: true,
-            // 3. Custom Icons - Replace these strings with your SVG code
-            icons: {
-                loading: '<img width="60" src="https://artplayer.org/assets/img/ploading.gif">',
-                state: '<svg width="100" height="100">...</svg>', 
-            },
-            subtitle: {
-                url: PROXY + encodeURIComponent(videoData.tracks[0].file),
-                type: 'vtt',
-                style: { color: '#fff', fontSize: '25px' }
-            },
-            plugins: [
-                artplayerPluginHlsQuality({
-                    control: true, // Quality Selection like Megaplay
-                    getResolution: (level) => level.height + 'p',
-                }),
-            ],
-            customType: {
-                m3u8: function (video, url) {
-                    if (Hls.isSupported()) {
-                        const hls = new Hls();
-                        hls.loadSource(url);
-                        hls.attachMedia(video);
-                        art.hls = hls; // Connect HLS to Artplayer instance
-                    }
+        // --- 2. PLAYER INITIALIZATION ---
+        async function initPlayer() {
+            const data = await getEpisodeData("current");
+            const skipBtn = document.getElementById('skip-intro');
+
+            const art = new Artplayer({
+                container: '#artplayer',
+                url: PROXY + encodeURIComponent(data.url),
+                type: 'm3u8',
+                autoplay: true,
+                muted: false,
+                fullscreen: true,
+                pip: false, // Start with PiP OFF to prevent the Metadata error
+                setting: true,
+                customType: {
+                    m3u8: function (video, url) {
+                        if (Hls.isSupported()) {
+                            const hls = new Hls();
+                            hls.loadSource(url);
+                            hls.attachMedia(video);
+                            // Ensure metadata is loaded before trying to play
+                            hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                                video.play().catch(() => {
+                                    art.notice.show = 'Click to Play';
+                                });
+                            });
+                        }
+                    },
                 },
-            },
-        });
+            });
 
-        // 4. Megaplay Skip Intro Logic
-        const skipBtn = document.getElementById('skip-btn');
-        art.on('video:timeupdate', () => {
-            if (art.currentTime >= videoData.intro.start && art.currentTime <= videoData.intro.end) {
-                skipBtn.style.display = 'block';
-            } else {
+            // --- 3. FIXING THE ERROR & HANDLING LOGIC ---
+
+            // Only enable PiP and Fullscreen after video is actually ready
+            art.on('video:canplay', () => {
+                console.log("Metadata loaded. Safe to use PiP.");
+                art.setting.update({ pip: true }); 
+            });
+
+            // Intro Skip Logic
+            art.on('video:timeupdate', () => {
+                if (art.currentTime >= data.introStart && art.currentTime <= data.introEnd) {
+                    skipBtn.style.display = 'block';
+                } else {
+                    skipBtn.style.display = 'none';
+                }
+            });
+
+            skipBtn.onclick = () => {
+                art.currentTime = data.introEnd;
                 skipBtn.style.display = 'none';
-            }
-        });
+            };
 
-        skipBtn.onclick = () => {
-            art.currentTime = videoData.intro.end;
-            art.notice.show = 'Intro Skipped';
-        };
+            // Auto-Select Next Episode logic
+            art.on('video:ended', () => {
+                art.notice.show = 'Loading next episode...';
+                setTimeout(() => {
+                    // In a real app, you'd change the window.location or 
+                    // art.switchUrl(new_proxied_url)
+                    alert("Switching to Episode " + data.nextEpisodeId);
+                }, 2000);
+            });
+        }
 
-        // 5. Auto-Next Placeholder (For your next-episode logic)
-        art.on('video:ended', () => {
-            alert("Episode Finished! Redirecting to next...");
-        });
+        initPlayer();
     </script>
 </body>
 </html>
