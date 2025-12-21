@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Anime Player</title>
+    <title>Anime Player Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js"></script>
     <style>
-        body, html { margin: 0; padding: 0; background: #000; height: 100%; overflow: hidden; }
+        body, html { margin: 0; padding: 0; background: #000; height: 100vh; overflow: hidden; }
         #artplayer { width: 100vw; height: 100vh; }
         .skip-btn {
             position: absolute; bottom: 80px; right: 20px; z-index: 100;
-            background: orange; color: black; padding: 10px 20px;
-            font-weight: bold; cursor: pointer; display: none; border-radius: 5px;
+            background: #ffad00; color: #000; padding: 12px 24px;
+            font-family: sans-serif; font-weight: bold; cursor: pointer;
+            display: none; border-radius: 4px; border: 1px solid white;
         }
     </style>
 </head>
@@ -22,85 +23,69 @@
     <div id="skip-intro" class="skip-btn">SKIP INTRO</div>
 
     <script>
-        // --- 1. CONFIGURATION & PROXY ---
+        // 1. API & Proxy Setup
         const PROXY = "https://proxy-pi-tawny.vercel.app/?url=";
-        
-        // This function simulates your API call to get the stream
-        async function getEpisodeData(episodeId) {
-            // Replace this with your actual fetch(`${your_api}/${episodeId}`)
-            return {
-                url: "https://haildrop77.pro/_v7/b145d2374990ae1c6729b473457964247200b0c4dfc266cd896c13c16c62b0176c9ddc773b9ab8e9957c6579e5ef9fbc10c92eb2275126f9dfabd86d42fdf73dd879b9a87ced51fc2c6b8bb389fb2d1c2b0405a67f28128f230594972df9cb66945a5f8f51629dbade11b96c674a291037a95b568ad1a2c6d896d45252b299be/master.m3u8",
-                introStart: 0,
-                introEnd: 89,
-                nextEpisodeId: "1054528" // Example ID for auto-select
-            };
-        }
+        const M3U8_URL = "https://haildrop77.pro/_v7/b145d2374990ae1c6729b473457964247200b0c4dfc266cd896c13c16c62b0176c9ddc773b9ab8e9957c6579e5ef9fbc10c92eb2275126f9dfabd86d42fdf73dd879b9a87ced51fc2c6b8bb389fb2d1c2b0405a67f28128f230594972df9cb66945a5f8f51629dbade11b96c674a291037a95b568ad1a2c6d896d45252b299be/master.m3u8";
 
-        // --- 2. PLAYER INITIALIZATION ---
-        async function initPlayer() {
-            const data = await getEpisodeData("current");
-            const skipBtn = document.getElementById('skip-intro');
+        // 2. Player Initialization
+        const art = new Artplayer({
+            container: '#artplayer',
+            url: PROXY + encodeURIComponent(M3U8_URL),
+            type: 'm3u8',
+            autoplay: true,
+            pip: false, // Turned off by default to fix your error
+            fullscreen: true,
+            setting: true,
+            theme: '#ffad00',
+            customType: {
+                m3u8: function (video, url) {
+                    if (Hls.isSupported()) {
+                        const hls = new Hls({
+                            // These settings help bypass minor network issues
+                            xhrSetup: (xhr) => { xhr.withCredentials = false; },
+                            manifestLoadingMaxRetry: 4
+                        });
+                        hls.loadSource(url);
+                        hls.attachMedia(video);
 
-            const art = new Artplayer({
-                container: '#artplayer',
-                url: PROXY + encodeURIComponent(data.url),
-                type: 'm3u8',
-                autoplay: true,
-                muted: false,
-                fullscreen: true,
-                pip: false, // Start with PiP OFF to prevent the Metadata error
-                setting: true,
-                customType: {
-                    m3u8: function (video, url) {
-                        if (Hls.isSupported()) {
-                            const hls = new Hls();
-                            hls.loadSource(url);
-                            hls.attachMedia(video);
-                            // Ensure metadata is loaded before trying to play
-                            hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                                video.play().catch(() => {
-                                    art.notice.show = 'Click to Play';
-                                });
+                        // FIX: Only play when the video metadata is actually there
+                        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                            video.play().catch(() => {
+                                art.notice.show = 'Click screen to start video';
                             });
-                        }
-                    },
+                        });
+
+                        // Error Recovery (Essential for HLS)
+                        hls.on(Hls.Events.ERROR, (event, data) => {
+                            if (data.fatal) {
+                                hls.recoverMediaError();
+                            }
+                        });
+                    }
                 },
-            });
+            },
+        });
 
-            // --- 3. FIXING THE ERROR & HANDLING LOGIC ---
+        // 3. Metadata Ready Event (Fixes your InvalidStateError)
+        art.on('video:loadedmetadata', () => {
+            console.log("Metadata loaded! PiP is now safe to use.");
+            art.setting.update({ pip: true });
+        });
 
-            // Only enable PiP and Fullscreen after video is actually ready
-            art.on('video:canplay', () => {
-                console.log("Metadata loaded. Safe to use PiP.");
-                art.setting.update({ pip: true }); 
-            });
-
-            // Intro Skip Logic
-            art.on('video:timeupdate', () => {
-                if (art.currentTime >= data.introStart && art.currentTime <= data.introEnd) {
-                    skipBtn.style.display = 'block';
-                } else {
-                    skipBtn.style.display = 'none';
-                }
-            });
-
-            skipBtn.onclick = () => {
-                art.currentTime = data.introEnd;
+        // 4. Skip Intro Logic (Hardcoded 0-89s for this example)
+        const skipBtn = document.getElementById('skip-intro');
+        art.on('video:timeupdate', () => {
+            if (art.currentTime >= 0 && art.currentTime <= 89) {
+                skipBtn.style.display = 'block';
+            } else {
                 skipBtn.style.display = 'none';
-            };
+            }
+        });
 
-            // Auto-Select Next Episode logic
-            art.on('video:ended', () => {
-                art.notice.show = 'Loading next episode...';
-                setTimeout(() => {
-                    // In a real app, you'd change the window.location or 
-                    // art.switchUrl(new_proxied_url)
-                    alert("Switching to Episode " + data.nextEpisodeId);
-                }, 2000);
-            });
-        }
-
-        initPlayer();
+        skipBtn.onclick = () => {
+            art.currentTime = 89;
+            art.notice.show = 'Skipped Intro';
+        };
     </script>
 </body>
 </html>
