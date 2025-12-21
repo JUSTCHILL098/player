@@ -1,235 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Your MegaPlay Clone</title>
-<style>
-  /* Basic dark MegaPlay style */
-  body {
-    margin: 0;
-    font-family: 'Poppins', sans-serif;
-    background: #0a0a0a;
-    color: #fff;
-  }
-  .container {
-    max-width: 1200px;
-    margin: auto;
-    padding: 20px;
-  }
-  h1 { text-align: center; margin-bottom: 30px; }
-  /* Player styles */
-  .player-wrapper {
-    position: relative;
-    width: 100%;
-    max-width: 100%;
-    background: #121212;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    margin-bottom: 20px;
-  }
-  video {
-    width: 100%;
-    height: 500px;
-    background: black;
-  }
-  .controls {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .btn {
-    padding: 10px 15px;
-    background: #6c5ce7;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: 0.3s;
-  }
-  .btn:hover { background: #a29bfe; }
-  .servers {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  .server-btn {
-    padding: 5px 10px;
-    background: #1a1a1a;
-    border: 1px solid #6c5ce7;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: 0.3s;
-  }
-  .server-btn.active { background: #6c5ce7; color: #fff; }
-  /* Search */
-  .search-wrapper { position: relative; margin-bottom: 20px; }
-  .search-wrapper input {
-    width: 100%;
-    padding: 12px 15px;
-    border-radius: 8px;
-    border: 1px solid #6c5ce7;
-    background: #121212;
-    color: #fff;
-  }
-  .autocomplete-list {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: #1a1a1a;
-    border: 1px solid #6c5ce7;
-    border-top: none;
-    max-height: 200px;
-    overflow-y: auto;
-    z-index: 1000;
-    border-radius: 0 0 8px 8px;
-  }
-  .autocomplete-item {
-    padding: 10px;
-    cursor: pointer;
-  }
-  .autocomplete-item:hover {
-    background: #6c5ce7;
-    color: #fff;
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Anime Player</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        body { margin: 0; padding: 0; background: #000; overflow: hidden; }
+        #player { width: 100vw; height: 100vh; }
+        
+        /* Custom styling for the Skip Button */
+        #skip-btn {
+            display: none;
+            position: absolute;
+            bottom: 80px;
+            right: 20px;
+            z-index: 20;
+            background: rgba(255, 173, 0, 0.9);
+            color: black;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        #skip-btn:hover { transform: scale(1.1); background: #fff; }
+    </style>
 </head>
 <body>
 
-<div class="container">
-  <h1>Anime Player</h1>
+    <div id="player"></div>
+    <div id="skip-btn">SKIP INTRO</div>
 
-  <div class="search-wrapper">
-    <input type="text" id="search-input" placeholder="Search anime...">
-    <div class="autocomplete-list" id="autocomplete-list"></div>
-  </div>
-
-  <div class="player-wrapper">
-    <video id="anime-player" controls></video>
-  </div>
-
-  <div class="servers" id="servers"></div>
-
-  <div class="controls">
-    <button class="btn" id="prev-btn">Prev Episode</button>
-    <button class="btn" id="skip-intro-btn">Skip Intro</button>
-    <button class="btn" id="skip-outro-btn">Skip Outro</button>
-    <button class="btn" id="next-btn">Next Episode</button>
-  </div>
-</div>
-
-<script>
-const API_BASE = "https://1010-delta.vercel.app/api"; // your API
-let currentEpisode = 1;
-let servers = [];
-let activeServer = null;
-const player = document.getElementById('anime-player');
-const serversContainer = document.getElementById('servers');
-
-// Load episode from server
-async function loadEpisode(ep = currentEpisode) {
-  try {
-    const res = await fetch(`${API_BASE}/stream?id=${ep}&type=sub`);
-    const data = await res.json();
-    if (!data.success || !data.results.servers) {
-      console.error("No servers found");
-      return;
-    }
-    servers = data.results.servers;
-    activeServer = servers[0];
-    renderServers();
-    setPlayerSource(activeServer.url);
-  } catch (err) {
-    console.error(err);
-  }
-}
-
-// Render server buttons
-function renderServers() {
-  serversContainer.innerHTML = '';
-  servers.forEach(s => {
-    const btn = document.createElement('button');
-    btn.textContent = s.name;
-    btn.classList.add('server-btn');
-    if (s === activeServer) btn.classList.add('active');
-    btn.onclick = () => {
-      activeServer = s;
-      setPlayerSource(s.url);
-      renderServers();
-    };
-    serversContainer.appendChild(btn);
-  });
-}
-
-// Set video source
-function setPlayerSource(url) {
-  player.src = url;
-  player.play();
-}
-
-// Auto-next episode
-player.addEventListener('ended', () => {
-  currentEpisode++;
-  loadEpisode(currentEpisode);
-});
-
-// Skip intro/outro (example fixed timestamps)
-document.getElementById('skip-intro-btn').addEventListener('click', () => {
-  player.currentTime = 60; // skip first 60s
-});
-document.getElementById('skip-outro-btn').addEventListener('click', () => {
-  player.currentTime = player.duration - 90; // skip last 90s
-});
-document.getElementById('prev-btn').addEventListener('click', () => {
-  if (currentEpisode > 1) currentEpisode--;
-  loadEpisode(currentEpisode);
-});
-document.getElementById('next-btn').addEventListener('click', () => {
-  currentEpisode++;
-  loadEpisode(currentEpisode);
-});
-
-// Search autocomplete
-const searchInput = document.getElementById('search-input');
-const autocompleteList = document.getElementById('autocomplete-list');
-
-let searchTimeout;
-searchInput.addEventListener('input', () => {
-  clearTimeout(searchTimeout);
-  const query = searchInput.value.trim();
-  if (!query) {
-    autocompleteList.innerHTML = '';
-    return;
-  }
-  searchTimeout = setTimeout(async () => {
-    const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}`);
-    const data = await res.json();
-    autocompleteList.innerHTML = '';
-    if (data.success && data.results.length) {
-      data.results.forEach(item => {
-        const div = document.createElement('div');
-        div.textContent = item.title;
-        div.classList.add('autocomplete-item');
-        div.onclick = () => {
-          searchInput.value = item.title;
-          currentEpisode = item.episode || 1;
-          loadEpisode(currentEpisode);
-          autocompleteList.innerHTML = '';
+    <script>
+        // YOUR API DATA (This would normally come from your fetch call)
+        const apiResponse = {
+            "streamingLink": {
+                "link": { "file": "https://haildrop77.pro/_v7/.../master.m3u8" },
+                "tracks": [
+                    { "file": "https://mgstatics.xyz/subtitle/.../eng-2.vtt", "label": "English", "default": true }
+                ],
+                "intro": { "start": 0, "end": 89 },
+                "outro": { "start": 1460, "end": 1549 }
+            }
         };
-        autocompleteList.appendChild(div);
-      });
-    }
-  }, 300);
-});
 
-// Initial load
-loadEpisode(currentEpisode);
-</script>
+        const stream = apiResponse.streamingLink;
+        const skipBtn = document.getElementById('skip-btn');
 
+        // 1. Initialize ArtPlayer
+        const art = new Artplayer({
+            container: '#player',
+            url: stream.link.file,
+            type: 'm3u8',
+            fullscreen: true,
+            setting: true,
+            pip: true,
+            playbackRate: true,
+            aspectRatio: true,
+            theme: '#ffad00', // Megaplay-style yellow/orange
+            
+            // 2. Custom Icons (Replace URLs with your SVG/PNG paths)
+            icons: {
+                loading: '<img width="60" src="https://artplayer.org/assets/img/ploading.gif">',
+                state: '<img width="150" src="https://artplayer.org/assets/img/state.svg">',
+            },
+
+            // 3. HLS Support
+            customType: {
+                m3u8: function (video, url) {
+                    if (Hls.isSupported()) {
+                        const hls = new Hls();
+                        hls.loadSource(url);
+                        hls.attachMedia(video);
+                    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                        video.src = url;
+                    }
+                },
+            },
+
+            // 4. Subtitles
+            subtitle: {
+                url: stream.tracks.find(t => t.default)?.file || '',
+                type: 'vtt',
+                style: {
+                    color: '#fff',
+                    fontSize: '24px',
+                    textShadow: '0 0 4px rgba(0,0,0,1)'
+                },
+            },
+
+            // 5. Timeline Markers (Visual dots for Intro/Outro)
+            highlight: [
+                { time: stream.intro.start, text: 'Intro' },
+                { time: stream.outro.start, text: 'Outro' },
+            ],
+        });
+
+        // 6. Skip Intro Logic
+        art.on('video:timeupdate', () => {
+            const currentTime = art.currentTime;
+            
+            // Show skip button if within intro range
+            if (currentTime >= stream.intro.start && currentTime <= stream.intro.end) {
+                skipBtn.style.display = 'block';
+            } else {
+                skipBtn.style.display = 'none';
+            }
+        });
+
+        skipBtn.onclick = () => {
+            art.currentTime = stream.intro.end;
+            skipBtn.style.display = 'none';
+            art.notice.show = 'Skipped Intro';
+        };
+
+        // 7. Auto-Skip Outro (Optional)
+        art.on('video:timeupdate', () => {
+            if (art.currentTime >= stream.outro.start) {
+                art.notice.show = 'Outro Started - Up Next in 5s...';
+                // You can add auto-next logic here
+            }
+        });
+
+    </script>
 </body>
 </html>
