@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Anime Player</title>
+  <title>Anime Player with Proxy</title>
   <link rel="stylesheet" href="https://unpkg.com/artplayer/dist/artplayer.css" />
   <style>
     body {
       margin: 0;
-      background-color: #111;
+      background: #111;
       color: #fff;
-      font-family: sans-serif;
+      font-family: Arial, sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -18,32 +18,26 @@
     }
     h1 {
       color: #facc15;
-      margin-bottom: 1rem;
+      margin-bottom: 2rem;
     }
-    #player, #iframe-container {
+    #player {
       width: 80%;
       max-width: 800px;
       height: 450px;
-      margin-bottom: 2rem;
-      background: #000;
       border-radius: 12px;
       overflow: hidden;
-    }
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
+      background: #000;
     }
     button {
-      margin: 0.5rem;
+      margin-top: 1rem;
       padding: 0.5rem 1rem;
       font-size: 1rem;
       border: none;
       border-radius: 6px;
       cursor: pointer;
+      background: #f59e0b;
+      color: #111;
     }
-    .btn-hls { background: #f59e0b; color: #111; }
-    .btn-iframe { background: #ef4444; color: #fff; }
   </style>
 </head>
 <body>
@@ -51,38 +45,34 @@
 <h1>Anime Player Demo</h1>
 
 <div id="player"></div>
-
-<div id="iframe-container"></div>
-
-<div>
-  <button class="btn-hls" onclick="playHLS()">Play .m3u8 Stream</button>
-  <button class="btn-iframe" onclick="loadIframe()">Load Iframe</button>
-</div>
+<button onclick="playStream()">Play Stream</button>
 
 <script src="https://unpkg.com/hls.js@latest"></script>
 <script src="https://unpkg.com/artplayer/dist/artplayer.js"></script>
-
 <script>
   let art;
 
-  // Example .m3u8 URL (replace with your API URL)
-  const hlsUrl = 'https://douvid.xyz/_v1_douvid/pqsaO0tGWa+kghXGEceldw==/z2RkBt-Hl_.m3u8';
-  // Example iframe URL (replace with your API iframe)
-  const iframeUrl = 'https://rapid-cloud.co/embed-2/v2/e-1/0mXH3eC1Emi0?k=1&autoPlay=0&oa=0&asi=1'; 
+  // Example protected m3u8 URL (replace with your API .m3u8 link)
+  const streamUrl = "https://douvid.xyz/_v1_douvid/pqsaO0tGWa+kghXGEceldw==/z2RkBt-Hl_.m3u8";
 
-  function playHLS() {
-    // Remove iframe if exists
-    document.getElementById('iframe-container').innerHTML = '';
+  // Proxy URL to bypass referer/hotlink protection
+  // Replace this with your working proxy URL like in React: VITE_M3U8_PROXY_URL
+  const proxyUrl = "https://your-proxy.example.com/?url=";
 
+  function playStream() {
     if (art) art.destroy();
 
+    const finalUrl = proxyUrl + encodeURIComponent(streamUrl) + "&headers=" + encodeURIComponent(JSON.stringify({
+      referer: "https://yourwebsite.com/"
+    }));
+
     art = new Artplayer({
-      container: '#player',
-      url: hlsUrl,
-      type: 'm3u8',
+      container: "#player",
+      url: finalUrl,
+      type: "m3u8",
       autoplay: true,
       setting: true,
-      controls: ['play', 'volume', 'fullscreen'],
+      controls: ["play", "volume", "fullscreen"],
       customType: {
         m3u8(video, url, artInstance) {
           if (Hls.isSupported()) {
@@ -90,23 +80,12 @@
             hls.loadSource(url);
             hls.attachMedia(video);
             artInstance.hls = hls;
-          } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
             video.src = url;
           }
         }
       }
     });
-  }
-
-  function loadIframe() {
-    // Destroy HLS player if exists
-    if (art) {
-      art.destroy();
-      art = null;
-    }
-
-    const container = document.getElementById('iframe-container');
-    container.innerHTML = `<iframe src="${iframeUrl}" allowfullscreen allow="autoplay; fullscreen; encrypted-media"></iframe>`;
   }
 </script>
 
