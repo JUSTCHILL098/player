@@ -1,208 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hianime Video API - My Own Player</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
-    
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js"></script>
-
-    <style>
-        :root {
-            --bg-primary: #0a0a0a;
-            --bg-secondary: #121212;
-            --bg-tertiary: #1a1a1a;
-            --text-primary: #ffffff;
-            --text-secondary: #a0a0a0;
-            --accent-primary: #6c5ce7;
-            --accent-secondary: #a29bfe;
-            --border-color: #2d2d2d;
-            --neon-glow: 0 0 10px rgba(108, 92, 231, 0.5);
-            --border-radius-lg: 20px;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            margin: 0; padding: 0;
-        }
-
-        .api-container {
-            max-width: 1000px;
-            margin: 50px auto;
-            padding: 40px;
-            background: var(--bg-secondary);
-            border-radius: var(--border-radius-lg);
-            border: 1px solid var(--border-color);
-        }
-
-        .api-header { text-align: center; margin-bottom: 40px; }
-        .api-header h1 {
-            font-size: 2.5rem; font-weight: 700;
-            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
-
-        .api-section {
-            margin-bottom: 40px; padding: 25px;
-            background: var(--bg-tertiary);
-            border-radius: 12px; border: 1px solid var(--border-color);
-        }
-
-        .code-block {
-            background-color: #1e1e2e; color: #f8f8f2;
-            padding: 18px; border-radius: 12px;
-            font-family: monospace; border-left: 3px solid var(--accent-primary);
-            margin-top: 10px; word-break: break-all;
-        }
-
-        /* Player Styling */
-        #artplayer {
-            width: 100%;
-            aspect-ratio: 16/9;
-            background: #000;
-            border-radius: 12px;
-            margin-top: 20px;
-            border: 1px solid var(--border-color);
-        }
-
-        .test-form {
-            background: rgba(108, 92, 231, 0.05);
-            padding: 25px; border-radius: 12px;
-            border: 1px solid rgba(108, 92, 231, 0.2);
-        }
-
-        .form-control, .form-select {
-            background-color: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            color: white; margin-bottom: 15px;
-        }
-
-        .btn-primary {
-            background: var(--accent-primary);
-            border: none; padding: 12px 25px; font-weight: 600;
-        }
-
-        .btn-primary:hover {
-            background: var(--accent-secondary);
-            box-shadow: var(--neon-glow);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anime Player</title>
+  <link rel="stylesheet" href="https://unpkg.com/artplayer/dist/artplayer.css" />
+  <style>
+    body {
+      margin: 0;
+      background-color: #111;
+      color: #fff;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+    h1 {
+      color: #facc15;
+      margin-bottom: 1rem;
+    }
+    #player, #iframe-container {
+      width: 80%;
+      max-width: 800px;
+      height: 450px;
+      margin-bottom: 2rem;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    button {
+      margin: 0.5rem;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-hls { background: #f59e0b; color: #111; }
+    .btn-iframe { background: #ef4444; color: #fff; }
+  </style>
 </head>
-
 <body>
-    <div class="api-container">
-        <div class="api-header">
-            <h1>My Private Anime API</h1>
-            <p class="text-secondary">Self-hosted streaming via ArtPlayer</p>
-        </div>
 
-        <div class="api-section" id="test-embed">
-            <h2><i class="fas fa-vial"></i> Generate Video</h2>
-            
-            <div class="test-form">
-                <div class="row">
-                    <div class="col-md-6">
-                        <label class="form-label">Anime ID</label>
-                        <input type="text" id="anime-id" class="form-control" placeholder="e.g. one-piece-100" value="one-piece-100">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Episode No.</label>
-                        <input type="number" id="ep-number" class="form-control" value="1">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Type</label>
-                        <select id="lang-type" class="form-select">
-                            <option value="sub">Sub</option>
-                            <option value="dub">Dub</option>
-                        </select>
-                    </div>
-                </div>
-                <button id="play-btn" class="btn btn-primary w-100">
-                    <i class="fas fa-play"></i> Load into ArtPlayer
-                </button>
-            </div>
+<h1>Anime Player Demo</h1>
 
-            <div id="player-section" style="display: none;">
-                <div id="artplayer"></div>
-                
-                <h3 class="mt-4"><i class="fas fa-code"></i> Proxied Stream URL:</h3>
-                <div class="code-block" id="stream-url-display"></div>
-            </div>
-        </div>
-    </div>
+<div id="player"></div>
 
-    <script>
-        let art;
+<div id="iframe-container"></div>
 
-        document.getElementById('play-btn').addEventListener('click', async function() {
-            const animeId = document.getElementById('anime-id').value.trim();
-            const epNum = document.getElementById('ep-number').value;
-            const type = document.getElementById('lang-type').value;
-            
-            const apiBase = "https://1010-delta.vercel.app/api";
-            const proxy = "https://proxy-pi-tawny.vercel.app/?url=";
+<div>
+  <button class="btn-hls" onclick="playHLS()">Play .m3u8 Stream</button>
+  <button class="btn-iframe" onclick="loadIframe()">Load Iframe</button>
+</div>
 
-            try {
-                // 1. Get Episode Data_ID
-                const epListResp = await fetch(`${apiBase}/episodes/${animeId}`);
-                const epListData = await epListResp.json();
+<script src="https://unpkg.com/hls.js@latest"></script>
+<script src="https://unpkg.com/artplayer/dist/artplayer.js"></script>
 
-                if (!epListData.success) throw new Error("Anime ID not found");
+<script>
+  let art;
 
-                const episode = epListData.results.episodes.find(e => e.episode_no == epNum);
-                if (!episode) throw new Error("Episode number not found in list");
+  // Example .m3u8 URL (replace with your API URL)
+  const hlsUrl = 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8';
+  // Example iframe URL (replace with your API iframe)
+  const iframeUrl = 'https://www.youtube.com/embed/5qap5aO4i9A'; 
 
-                // 2. Get Streaming Link
-                const streamUrl = `${apiBase}/stream?id=${animeId}?ep=${episode.data_id}&server=hd-1&type=${type}`;
-                const streamResp = await fetch(streamUrl);
-                const streamData = await streamResp.json();
+  function playHLS() {
+    // Remove iframe if exists
+    document.getElementById('iframe-container').innerHTML = '';
 
-                // 3. Check if streamingLink exists before reading .length
-                if (!streamData.results || !streamData.results.streamingLink || streamData.results.streamingLink.length === 0) {
-                    throw new Error("No streaming links returned from API");
-                }
+    if (art) art.destroy();
 
-                const m3u8 = streamData.results.streamingLink[0].link.file;
-                const finalProxiedUrl = proxy + encodeURIComponent(m3u8);
+    art = new Artplayer({
+      container: '#player',
+      url: hlsUrl,
+      type: 'm3u8',
+      autoplay: true,
+      setting: true,
+      controls: ['play', 'volume', 'fullscreen'],
+      customType: {
+        m3u8(video, url, artInstance) {
+          if (Hls.isSupported()) {
+            const hls = new Hls();
+            hls.loadSource(url);
+            hls.attachMedia(video);
+            artInstance.hls = hls;
+          } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = url;
+          }
+        }
+      }
+    });
+  }
 
-                // 4. Update UI
-                document.getElementById('player-section').style.display = 'block';
-                document.getElementById('stream-url-display').innerText = finalProxiedUrl;
+  function loadIframe() {
+    // Destroy HLS player if exists
+    if (art) {
+      art.destroy();
+      art = null;
+    }
 
-                // 5. Initialize/Update ArtPlayer
-                if (art) art.destroy();
+    const container = document.getElementById('iframe-container');
+    container.innerHTML = `<iframe src="${iframeUrl}" allowfullscreen allow="autoplay; fullscreen; encrypted-media"></iframe>`;
+  }
+</script>
 
-                art = new ArtPlayer({
-                    container: '#artplayer',
-                    url: finalProxiedUrl,
-                    type: 'm3u8',
-                    fullscreen: true,
-                    autoplay: true,
-                    theme: '#6c5ce7',
-                    customType: {
-                        m3u8: function(video, url) {
-                            if (Hls.isSupported()) {
-                                const hls = new Hls();
-                                hls.loadSource(url);
-                                hls.attachMedia(video);
-                            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                                video.src = url;
-                            }
-                        },
-                    },
-                });
-
-            } catch (err) {
-                console.error(err);
-                alert("Error: " + err.message);
-            }
-        });
-    </script>
 </body>
 </html>
