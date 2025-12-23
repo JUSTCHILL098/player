@@ -2,30 +2,105 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Dynamic iframe Player</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Custom Anime Player</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.css">
   <style>
-    body, html { margin: 0; height: 100%; }
-    #player { width: 100%; height: 100vh; }
+    body, html { margin: 0; padding: 0; height: 100%; background: #000; }
+    #player-container { width: 100%; height: 100vh; }
+    #server-buttons { position: absolute; top: 10px; right: 10px; z-index: 1000; }
+    #server-buttons button { margin-left: 5px; padding: 5px 10px; }
   </style>
 </head>
 <body>
-  <div id="player"></div>
-  <script>
-    const playerDiv = document.getElementById('player');
 
-    const iframe = document.createElement('iframe');
-    iframe.allowFullscreen = true;
-    iframe.allow = "autoplay; fullscreen; encrypted-media";
-    iframe.sandbox = "allow-same-origin allow-scripts allow-popups allow-forms";
-    iframe.style.width = "100%";
-    iframe.style.height = "100%";
-    iframe.style.border = "0";
+<div id="player-container"></div>
+<div id="server-buttons"></div>
 
-    // small delay to mimic React behavior
-    setTimeout(() => {
-      iframe.src = "https://rapid-cloud.co/embed-2/v2/e-1/GiKGPU7SdxBL?k=1&autoPlay=0&oa=0&asi=1"; 
-      playerDiv.appendChild(iframe);
-    }, 100);
-  </script>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js"></script>
+
+<script>
+  // JSON from your API
+  const data = {
+    streamingLink: {
+      id: "574667",
+      type: "sub",
+      link: {
+        file: "https://fogtwist21.xyz/_v7/71f87b4028d27b3ba749bd2029f3248245618a740ca81a9a9863f257784436f85c939482f4d306945639b935dc612f232173cae4f207297dea8798f69741cdadcf03986938ae645355b02ac49101bd99d26dbcacac3e6ab00b678324a21474728d09a70cb4b5086fbc36943efb9f1695c522b23382b639d8f473c8ce9a528151/master.m3u8",
+        type: "hls"
+      },
+      tracks: [
+        {
+          file: "https://mgstatics.xyz/subtitle/73fd2e74257659a8ef9b9cdd004623a5/eng-2.vtt",
+          label: "English",
+          kind: "captions",
+          default: true
+        }
+      ],
+      intro: { start: 31, end: 111 },
+      outro: { start: 1376, end: 1447 },
+      iframe: "https://rapid-cloud.co/embed-2/v2/e-1/GiKGPU7SdxBL?k=1&autoPlay=0&oa=0&asi=1",
+      server: "hd-1"
+    },
+    servers: [
+      { type: "sub", data_id: "574667", server_id: "4", serverName: "HD-1" },
+      { type: "sub", data_id: "410640", server_id: "1", serverName: "HD-2" },
+      { type: "sub", data_id: "1176849", server_id: "6", serverName: "HD-3" },
+      { type: "dub", data_id: "583679", server_id: "4", serverName: "HD-1" }
+    ]
+  };
+
+  const container = '#player-container';
+
+  let currentServerIndex = 0;
+
+  const playM3u8 = (video, url, art) => {
+    if (Hls.isSupported()) {
+      if (art.hls) art.hls.destroy();
+      const hls = new Hls();
+      hls.loadSource(url);
+      hls.attachMedia(video);
+      art.hls = hls;
+    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      video.src = url;
+    }
+  };
+
+  // Initialize Artplayer
+  let art = new Artplayer({
+    container,
+    url: data.streamingLink.link.file,
+    type: 'm3u8',
+    autoplay: true,
+    setting: true,
+    screenshot: true,
+    subtitle: {
+      url: data.streamingLink.tracks[0].file,
+      type: 'webvtt',
+      style: { color: '#fff', fontSize: '16px', background: 'rgba(0,0,0,0.5)' }
+    },
+    chapter: [
+      { start: data.streamingLink.intro.start, end: data.streamingLink.intro.end, title: "Intro" },
+      { start: data.streamingLink.outro.start, end: data.streamingLink.outro.end, title: "Outro" }
+    ],
+    customType: { m3u8: playM3u8 }
+  });
+
+  // Server buttons
+  const serverButtonsDiv = document.getElementById('server-buttons');
+  data.servers.forEach((server, index) => {
+    const btn = document.createElement('button');
+    btn.innerText = server.serverName;
+    btn.onclick = () => {
+      currentServerIndex = index;
+      const serverData = data.servers[currentServerIndex];
+      // For simplicity, only switching the URL
+      art.switchUrl(serverData.link?.file || data.streamingLink.link.file);
+    };
+    serverButtonsDiv.appendChild(btn);
+  });
+
+</script>
 </body>
 </html>
