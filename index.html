@@ -1,176 +1,188 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hianime Video API - MegaPlay</title>
-    <meta name="description" content="If you used to scrape hianime and now unable to embed, use our player to embed videos easily just in one step.">
-    
-    <link rel="stylesheet" href="styles.css">
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <style>
-        /* Force background to black as requested */
-        body {
-            background-color: #000000 !important;
-            color: var(--text-primary);
-            padding: 20px;
-        }
+  <title>Hianime Video API - MegaPlay</title>
+  <meta name="description" content="Embed Hianime videos easily using MegaPlay API" />
 
-        .api-container {
-            max-width: 1000px;
-            margin: 20px auto;
-            padding: 40px;
-            background: var(--bg-secondary);
-            border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border-color);
-        }
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-        .api-header h1 {
-            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 700;
-        }
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
-        .api-section {
-            margin-bottom: 30px;
-            padding: 25px;
-            background: var(--bg-tertiary);
-            border-radius: var(--border-radius);
-            border: 1px solid var(--border-color);
-            transition: var(--transition);
-        }
+  <!-- Bootstrap -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
 
-        .api-section:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--neon-glow);
-            border-color: var(--accent-primary);
-        }
+<style>
+:root {
+  --bg-primary:#0a0a0a;
+  --bg-secondary:#121212;
+  --bg-tertiary:#1a1a1a;
+  --text-primary:#fff;
+  --text-secondary:#a0a0a0;
+  --accent:#6c5ce7;
+  --accent-2:#a29bfe;
+  --success:#00b894;
+  --danger:#ff7675;
+  --border:#2d2d2d;
+  --radius:12px;
+}
 
-        .code-block {
-            background-color: #000;
-            color: var(--accent-secondary);
-            padding: 18px;
-            border-radius: var(--border-radius);
-            font-family: monospace;
-            border-left: 4px solid var(--accent-primary);
-            overflow-x: auto;
-        }
+body{
+  font-family:Poppins,sans-serif;
+  background:var(--bg-primary);
+  color:var(--text-primary);
+}
 
-        .btn-primary {
-            background: var(--accent-primary) !important;
-            border: none !important;
-        }
+.api-container{
+  max-width:1000px;
+  margin:40px auto;
+  padding:40px;
+  background:var(--bg-secondary);
+  border-radius:20px;
+  border:1px solid var(--border);
+}
 
-        .btn-primary:hover {
-            box-shadow: var(--neon-glow-strong);
-            background: var(--accent-secondary) !important;
-        }
+.api-header{
+  text-align:center;
+  margin-bottom:40px;
+}
 
-        /* Mobile specific adjustments */
-        @media (max-width: 768px) {
-            .api-container {
-                padding: 20px;
-                margin: 10px;
-            }
-        }
-    </style>
+.api-header h1{
+  font-weight:700;
+  background:linear-gradient(45deg,var(--accent),var(--accent-2));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+.api-badge{
+  display:inline-block;
+  padding:6px 16px;
+  border-radius:50px;
+  background:rgba(108,92,231,.1);
+  color:var(--accent);
+  margin-bottom:10px;
+}
+
+.api-section{
+  margin-bottom:30px;
+  padding:25px;
+  background:var(--bg-tertiary);
+  border-radius:var(--radius);
+  border:1px solid var(--border);
+}
+
+.api-section h2{
+  color:var(--accent);
+  font-size:1.4rem;
+  margin-bottom:15px;
+}
+
+.code-block{
+  background:#1e1e2e;
+  color:#f8f8f2;
+  padding:16px;
+  border-radius:var(--radius);
+  font-family:monospace;
+  overflow:auto;
+}
+
+.alert{
+  border-radius:var(--radius);
+}
+
+.embed-container{
+  position:relative;
+  padding-bottom:56.25%;
+  height:0;
+  margin-top:15px;
+}
+
+.embed-container iframe{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  border-radius:var(--radius);
+  border:0;
+}
+
+.btn-primary{
+  background:var(--accent);
+  border:none;
+}
+
+.btn-primary:hover{
+  background:var(--accent-2);
+}
+</style>
 </head>
+
 <body>
 
-    <div class="api-container">
-        <div class="api-header text-center mb-5">
-            <span class="badge rounded-pill mb-3" style="background: rgba(108, 92, 231, 0.1); color: var(--accent-primary); padding: 8px 20px;">
-                <i class="fas fa-code"></i> Documentation
-            </span>
-            <h1>Hianime Video API</h1>
-        </div>
+<div class="api-container">
 
-        <div class="alert alert-info border-0" style="background: rgba(108, 92, 231, 0.1); color: var(--text-primary); border-left: 4px solid var(--accent-primary) !important;">
-            <i class="fas fa-info-circle me-2"></i>
-            If you used to scrape hianime and now unable to embed, use our player to embed videos easily just in one step.
-        </div>
+  <div class="api-header">
+    <span class="api-badge"><i class="fa-solid fa-code"></i> Documentation</span>
+    <h1>Hianime Video API</h1>
+  </div>
 
-        <div class="api-section">
-            <h2 class="h4" style="color: var(--accent-primary);"><i class="fas fa-book me-2"></i> How it Works</h2>
-            <p>It's a complete solution for webmasters to start their own anime ready website using our easy API. Our hosted content remains accessible even if original sources change.</p>
-        </div>
+  <div class="alert alert-info">
+    If you used to scrape Hianime and can’t embed anymore, use our player instead.
+  </div>
 
-        <div class="api-section">
-            <h2 class="h4" style="color: var(--accent-primary);"><i class="fas fa-server me-2"></i> Usage</h2>
-            <p><strong>Endpoint:</strong></p>
-            <div class="code-block">
-                https://megaplay.buzz/stream/s-2/{hianime-ep-id}/{language}
-            </div>
-            <p class="mt-3 small text-secondary">Example: <code>.../stream/s-2/136197/dub</code></p>
-        </div>
+  <div class="api-section">
+    <h2><i class="fa-solid fa-server"></i> Usage</h2>
+    <ul>
+      <li><b>Endpoint:</b> <code>https://megaplay.buzz/stream/s-2/{ep-id}/{language}</code></li>
+      <li><b>Language:</b> <code>sub</code> or <code>dub</code></li>
+    </ul>
+  </div>
 
-        <div class="api-section" id="test-embed">
-            <h2 class="h4" style="color: var(--accent-primary);"><i class="fas fa-vial me-2"></i> Test Your Embed</h2>
-            
-            <form id="embed-form" class="mt-4">
-                <div class="row g-3">
-                    <div class="col-md-8">
-                        <label class="form-label text-secondary small">Hianime Episode ID</label>
-                        <input type="text" id="episode-id" class="form-control bg-dark border-secondary text-white" placeholder="e.g. 136197" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label text-secondary small">Language</label>
-                        <select id="language" class="form-select bg-dark border-secondary text-white">
-                            <option value="sub">Sub</option>
-                            <option value="dub">Dub</option>
-                        </select>
-                    </div>
-                    <div class="col-12 mt-4">
-                        <button type="submit" class="btn btn-primary w-100 py-2">Generate Embed Code</button>
-                    </div>
-                </div>
-            </form>
+  <div class="api-section">
+    <h2><i class="fa-solid fa-code"></i> Embed Example</h2>
 
-            <div id="embed-result" class="mt-5" style="display: none;">
-                <h6 class="text-secondary"><i class="fas fa-code me-2"></i> HTML Code</h6>
-                <div class="code-block" id="embed-code"></div>
-                <button class="btn btn-sm btn-outline-secondary mt-2 mb-4" id="copy-btn">
-                    <i class="fas fa-copy"></i> Copy Code
-                </button>
-
-                <h6 class="text-secondary"><i class="fas fa-tv me-2"></i> Preview</h6>
-                <div class="ratio ratio-16x9 border border-secondary rounded overflow-hidden">
-                    <iframe id="preview-frame" src="" allowfullscreen></iframe>
-                </div>
-            </div>
-        </div>
+    <div class="code-block">
+&lt;iframe src="https://megaplay.buzz/stream/s-2/136197/dub"
+width="100%" height="100%" allowfullscreen&gt;&lt;/iframe&gt;
     </div>
+  </div>
 
-    <script src="bootstrap.bundle.min.js"></script>
-    <script>
-        document.getElementById('embed-form').addEventListener('submit', function (e) {
-            e.preventDefault();
-            const id = document.getElementById('episode-id').value.trim();
-            const lang = document.getElementById('language').value;
-            const url = `https://megaplay.buzz/stream/s-2/${id}/${lang}`;
-            const code = `<iframe src="${url}" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>`;
+  <div class="api-section">
+    <h2><i class="fa-solid fa-vial"></i> Test Embed</h2>
 
-            document.getElementById('embed-code').textContent = code;
-            document.getElementById('preview-frame').src = url;
-            document.getElementById('embed-result').style.display = 'block';
+    <form id="embed-form">
+      <input id="ep" class="form-control mb-2" placeholder="Episode ID (e.g. 136197)" required>
+      <select id="lang" class="form-select mb-2">
+        <option value="sub">Sub</option>
+        <option value="dub">Dub</option>
+      </select>
+      <button class="btn btn-primary w-100">Generate</button>
+    </form>
 
-            document.getElementById('embed-result').scrollIntoView({ behavior: 'smooth' });
-        });
+    <div id="result" style="display:none">
+      <h5 class="mt-3">Preview</h5>
+      <div class="embed-container">
+        <iframe id="frame"></iframe>
+      </div>
+    </div>
+  </div>
 
-        document.getElementById('copy-btn').addEventListener('click', function() {
-            const text = document.getElementById('embed-code').textContent;
-            navigator.clipboard.writeText(text);
-            this.innerText = "Copied!";
-            setTimeout(() => { this.innerHTML = '<i class="fas fa-copy"></i> Copy Code'; }, 2000);
-        });
-    </script>
+</div>
+
+<script>
+document.getElementById("embed-form").addEventListener("submit",e=>{
+  e.preventDefault();
+  const ep=document.getElementById("ep").value.trim();
+  const lang=document.getElementById("lang").value;
+  const url=`https://megaplay.buzz/stream/s-2/${ep}/${lang}`;
+  document.getElementById("frame").src=url;
+  document.getElementById("result").style.display="block";
+});
+</script>
+
 </body>
 </html>
