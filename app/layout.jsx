@@ -1,5 +1,5 @@
 import "./globals.css"
-import { GeistMono } from "geist/font/mono"
+import { Mono } from 'geist/font/mono';
 
 const geist = GeistMono({
   subsets: ["latin"],
