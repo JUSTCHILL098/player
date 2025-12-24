@@ -1,0 +1,19 @@
+{
+  "name": "megaplay-api",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "14.2.5",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "geist": "^1.3.0",
+    "clsx": "^2.1.0",
+    "tailwind-merge": "^2.5.2",
+    "lucide-react": "^0.453.0"
+  }
+}
