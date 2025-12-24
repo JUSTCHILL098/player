@@ -2,8 +2,8 @@ import "./globals.css"
 import { GeistMono } from "geist/font/mono"
 
 export const metadata = {
-  title: "Hianime Video API - MegaPlay",
-  description: "Embed Hianime videos easily"
+  title: "MegaPlay API",
+  description: "Hianime Video API"
 }
 
 export default function RootLayout({ children }) {
