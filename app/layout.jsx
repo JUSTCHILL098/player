@@ -1,7 +1,7 @@
 import "./globals.css"
-import { Geist_Mono } from "next/font/google"
+import { GeistMono } from "geist/font/mono"
 
-const geistMono = Geist_Mono({
+const geist = GeistMono({
   subsets: ["latin"],
 })
 
@@ -13,7 +13,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={geistMono.className}>
+      <body className={geist.className}>
         {children}
       </body>
     </html>
