@@ -1,106 +1,176 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Custom Anime Player</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.css">
-  <style>
-    body, html { margin: 0; padding: 0; height: 100%; background: #000; }
-    #player-container { width: 100%; height: 100vh; }
-    #server-buttons { position: absolute; top: 10px; right: 10px; z-index: 1000; }
-    #server-buttons button { margin-left: 5px; padding: 5px 10px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hianime Video API - MegaPlay</title>
+    <link rel="stylesheet" href="lib/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    
+    <style>
+        .api-container {
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 40px;
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+        .code-block {
+            background-color: #1e1e2e;
+            color: #f8f8f2;
+            padding: 18px;
+            border-radius: var(--border-radius);
+            font-family: monospace;
+            border-left: 3px solid var(--accent-primary);
+            margin: 15px 0;
+            position: relative;
+        }
+        .embed-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+        }
+        .embed-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
 </head>
 <body>
 
-<div id="player-container"></div>
-<div id="server-buttons"></div>
+    <div class="api-container">
+        <div class="api-header text-center mb-5">
+            <span class="api-badge"><i class="fas fa-code"></i> Documentation</span>
+            <h1 class="display-5 fw-bold mt-3" style="background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                Hianime Video API
+            </h1>
+        </div>
 
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-<script src="https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js"></script>
+        <div class="alert alert-info border-0 shadow-sm d-flex align-items-center mb-4">
+            <i class="fas fa-info-circle me-3 fs-4"></i>
+            <div>If you used to scrape hianime and are now unable to embed, use our player to embed videos easily in just one step.</div>
+        </div>
 
-<script>
-  // JSON from your API
-  const data = {
-    streamingLink: {
-      id: "574667",
-      type: "sub",
-      link: {
-        file: "https://fogtwist21.xyz/_v7/71f87b4028d27b3ba749bd2029f3248245618a740ca81a9a9863f257784436f85c939482f4d306945639b935dc612f232173cae4f207297dea8798f69741cdadcf03986938ae645355b02ac49101bd99d26dbcacac3e6ab00b678324a21474728d09a70cb4b5086fbc36943efb9f1695c522b23382b639d8f473c8ce9a528151/master.m3u8",
-        type: "hls"
-      },
-      tracks: [
-        {
-          file: "https://mgstatics.xyz/subtitle/73fd2e74257659a8ef9b9cdd004623a5/eng-2.vtt",
-          label: "English",
-          kind: "captions",
-          default: true
-        }
-      ],
-      intro: { start: 31, end: 111 },
-      outro: { start: 1376, end: 1447 },
-      iframe: "https://rapid-cloud.co/embed-2/v2/e-1/GiKGPU7SdxBL?k=1&autoPlay=0&oa=0&asi=1",
-      server: "hd-1"
-    },
-    servers: [
-      { type: "sub", data_id: "574667", server_id: "4", serverName: "HD-1" },
-      { type: "sub", data_id: "410640", server_id: "1", serverName: "HD-2" },
-      { type: "sub", data_id: "1176849", server_id: "6", serverName: "HD-3" },
-      { type: "dub", data_id: "583679", server_id: "4", serverName: "HD-1" }
-    ]
-  };
+        <div class="api-section mb-5">
+            <h2 class="h4 text-primary mb-3"><i class="fas fa-book me-2"></i> Overview</h2>
+            <p class="text-secondary">A complete solution for webmasters to start their own anime website using our easy-to-use API. Our hosted content remains accessible even if original sources change.</p>
+            
+            <div class="alert alert-warning bg-opacity-10 border-start border-warning border-4">
+                <strong><i class="fas fa-exclamation-triangle"></i> Note:</strong> Direct access to embed links is disabled. Links only function when embedded on your domain.
+            </div>
+        </div>
 
-  const container = '#player-container';
+        <div class="api-section mb-5">
+            <h2 class="h4 text-primary mb-3"><i class="fas fa-server me-2"></i> API Usage</h2>
+            <p><strong>Endpoint:</strong></p>
+            <div class="code-block">
+                https://megaplay.buzz/stream/s-2/{hianime-ep-id}/{language}
+            </div>
 
-  let currentServerIndex = 0;
+            <table class="table table-dark table-hover mt-4">
+                <thead>
+                    <tr>
+                        <th class="text-primary">Parameter</th>
+                        <th class="text-primary">Description</th>
+                        <th class="text-primary text-center">Required</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>{hianime-ep-id}</code></td>
+                        <td>The unique episode ID found in the Hianime URL</td>
+                        <td class="text-center text-success">Yes</td>
+                    </tr>
+                    <tr>
+                        <td><code>{language}</code></td>
+                        <td>Language version: <code>sub</code> or <code>dub</code></td>
+                        <td class="text-center text-success">Yes</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
-  const playM3u8 = (video, url, art) => {
-    if (Hls.isSupported()) {
-      if (art.hls) art.hls.destroy();
-      const hls = new Hls();
-      hls.loadSource(url);
-      hls.attachMedia(video);
-      art.hls = hls;
-    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      video.src = url;
-    }
-  };
+        <div class="api-section mb-5">
+            <h2 class="h4 text-primary mb-3"><i class="fas fa-search me-2"></i> Finding Episode IDs</h2>
+            <p>Visit <code>hianime.to</code>. When watching an episode, look for the <code>?ep=</code> parameter in the URL.</p>
+            <p>Example: <code>.../watch/anime-name?ep=136197</code> &rarr; ID is <strong>136197</strong></p>
+        </div>
 
-  // Initialize Artplayer
-  let art = new Artplayer({
-    container,
-    url: data.streamingLink.link.file,
-    type: 'm3u8',
-    autoplay: true,
-    setting: true,
-    screenshot: true,
-    subtitle: {
-      url: data.streamingLink.tracks[0].file,
-      type: 'webvtt',
-      style: { color: '#fff', fontSize: '16px', background: 'rgba(0,0,0,0.5)' }
-    },
-    chapter: [
-      { start: data.streamingLink.intro.start, end: data.streamingLink.intro.end, title: "Intro" },
-      { start: data.streamingLink.outro.start, end: data.streamingLink.outro.end, title: "Outro" }
-    ],
-    customType: { m3u8: playM3u8 }
-  });
+        <div class="api-section border p-4 rounded-4" id="test-embed" style="background: rgba(108, 92, 231, 0.05);">
+            <h2 class="h4 text-primary mb-4"><i class="fas fa-vial me-2"></i> Test Your Embed</h2>
+            
+            <form id="embed-form" class="row g-3">
+                <div class="col-md-8">
+                    <label class="form-label text-secondary">Hianime Episode ID</label>
+                    <input type="text" id="episode-id" class="form-control bg-dark border-secondary text-white" placeholder="e.g. 136197" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-secondary">Language</label>
+                    <select id="language" class="form-select bg-dark border-secondary text-white">
+                        <option value="sub">Sub</option>
+                        <option value="dub">Dub</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="fas fa-play me-2"></i> Generate Preview
+                    </button>
+                </div>
+            </form>
 
-  // Server buttons
-  const serverButtonsDiv = document.getElementById('server-buttons');
-  data.servers.forEach((server, index) => {
-    const btn = document.createElement('button');
-    btn.innerText = server.serverName;
-    btn.onclick = () => {
-      currentServerIndex = index;
-      const serverData = data.servers[currentServerIndex];
-      // For simplicity, only switching the URL
-      art.switchUrl(serverData.link?.file || data.streamingLink.link.file);
-    };
-    serverButtonsDiv.appendChild(btn);
-  });
+            <div id="embed-result" class="mt-5" style="display: none;">
+                <h3 class="h6 text-primary"><i class="fas fa-code me-2"></i> Generated HTML Code</h3>
+                <div class="code-block" id="embed-code"></div>
+                <button class="btn btn-sm btn-outline-primary mb-4" id="copy-btn">
+                    <i class="fas fa-copy me-1"></i> Copy Code
+                </button>
 
-</script>
+                <h3 class="h6 text-primary"><i class="fas fa-tv me-2"></i> Live Preview</h3>
+                <div class="embed-container shadow-lg">
+                    <iframe id="preview-frame" src="about:blank" frameborder="0" scrolling="no" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('embed-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const epId = document.getElementById('episode-id').value.trim();
+            const lang = document.getElementById('language').value;
+            
+            const url = `https://megaplay.buzz/stream/s-2/${epId}/${lang}`;
+            const iframeCode = `<iframe src="${url}" width="100%" height="100%" frameborder="0" scrolling="no" allowfullscreen></iframe>`;
+            
+            document.getElementById('embed-code').textContent = iframeCode;
+            document.getElementById('preview-frame').src = url;
+            document.getElementById('embed-result').style.display = 'block';
+            
+            window.scrollTo({
+                top: document.getElementById('embed-result').offsetTop - 50,
+                behavior: 'smooth'
+            });
+        });
+
+        document.getElementById('copy-btn').addEventListener('click', function() {
+            const code = document.getElementById('embed-code').textContent;
+            navigator.clipboard.writeText(code);
+            this.innerHTML = '<i class="fas fa-check me-1"></i> Copied!';
+            setTimeout(() => {
+                this.innerHTML = '<i class="fas fa-copy me-1"></i> Copy Code';
+            }, 2000);
+        });
+    </script>
 </body>
 </html>
