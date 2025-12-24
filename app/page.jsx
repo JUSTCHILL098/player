@@ -37,9 +37,10 @@ export default function Page() {
 
       <button
         style={{ width: "100%", padding: 12, marginTop: 10 }}
-        onClick={() =>
-          setUrl(`https://megaplay.buzz/stream/s-2/${ep}/${lang}`)
-        }
+        onClick={() => {
+          if (!ep) return alert("Please enter an episode ID!");
+          setUrl(`https://megaplay.buzz/stream/s-2/${ep}/${lang}`);
+        }}
       >
         Generate Embed
       </button>
@@ -50,11 +51,10 @@ export default function Page() {
 {`<iframe src="${url}" width="100%" height="100%" allowfullscreen></iframe>`}
           </pre>
 
-          <div style={{ marginTop: 20, aspectRatio: "16 / 9" }}>
+          <div style={{ marginTop: 20, position: "relative", paddingBottom: "56.25%", height: 0 }}>
             <iframe
               src={url}
-              width="100%"
-              height="100%"
+              style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
               allowFullScreen
             />
           </div>
